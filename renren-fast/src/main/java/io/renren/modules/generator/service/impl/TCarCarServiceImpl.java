@@ -182,6 +182,13 @@ public class TCarCarServiceImpl extends ServiceImpl<TCarCarDao, TCarCarEntity> i
         return R.ok().put("list", list).put("dlist", dataArray).put("dates", monthEntities);
     }
 
+    @Override
+    public Integer updateDriverByCarId(Map<String, Object> map) {
+        Integer driverId = (Integer) map.get("driverId");
+        Integer carId = (Integer) map.get("carId");
+        return this.baseMapper.updateDriverByCarId(driverId,carId);
+    }
+
     private List<Tree> getTrees(List<String> list, List<Long> list1, String type) {
         List<Tree> treeList = new ArrayList<>();
         if (list1 != null) {

@@ -106,6 +106,16 @@ public class TCarCarController {
     }
 
     /**
+     * 修改司机
+     */
+    @RequestMapping("/updateDriver")
+    @RequiresPermissions("generator:tcarcar:update")
+    public R update(@RequestParam Map<String,Object> map){
+        tCarCarService.updateDriverByCarId(map);
+        return R.ok();
+    }
+
+    /**
      * 删除
      */
     @RequestMapping("/delete")

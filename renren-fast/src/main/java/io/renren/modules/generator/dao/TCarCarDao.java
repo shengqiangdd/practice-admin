@@ -13,6 +13,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 车辆档案
@@ -38,4 +39,7 @@ public interface TCarCarDao extends BaseMapper<TCarCarEntity> {
 
     List<TCarStateEntity> selectTCarStatus(@Param(Constants.WRAPPER)
             Wrapper<TCarStateEntity> queryWrapper);
+
+    Integer updateDriverByCarId(@Param(value = "driverId") Integer driverId,
+                                @Param(value = "carId")Integer carId);
 }

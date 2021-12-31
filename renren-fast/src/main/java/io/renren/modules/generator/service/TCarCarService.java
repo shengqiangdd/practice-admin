@@ -27,5 +27,7 @@ public interface TCarCarService extends IService<TCarCarEntity> {
     List<TypeTree> selectTypeTree();
 
     R selectTCarStatus(Map<String,Object> map);
+
+    Integer updateDriverByCarId(Map<String,Object> map);
 }
 
