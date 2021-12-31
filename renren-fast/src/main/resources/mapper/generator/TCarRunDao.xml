@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.generator.dao.TCarRunDao">
+
+    <sql id="BASE_COLUMN_LIST">
+        [if] as 'tcr.id',
+        tcr.carid,userid,username,tcr.number as 'tcr.number',begintime,
+        planreturntime,endtime,tcr.deptid,tcr.deptname,party,
+        tcr.driver as 'tcr.driver',tcr.drivertel as 'tcr.drivertel',
+        beginplace,endplace,reason,beginnumber,endnumber,mileage,
+        tcr.remark as 'tcr.remark',tcr.type as 'tcr.type',
+        tcr.status as 'tcr.status',tcc.number as 'tcc.number'
+    </sql>
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.modules.generator.entity.TCarRunEntity" id="tCarRunMap">
+        <result property="id" column="tcr.id"/>
+        <result property="carid" column="carid"/>
+        <result property="userid" column="userid"/>
+        <result property="username" column="username"/>
+        <result property="number" column="tcr.number"/>
+        <result property="begintime" column="begintime"/>
+        <result property="planreturntime" column="planreturntime"/>
+        <result property="endtime" column="endtime"/>
+        <result property="deptid" column="deptid"/>
+        <result property="deptname" column="deptname"/>
+        <result property="party" column="party"/>
+        <result property="driver" column="tcr.driver"/>
+        <result property="drivertel" column="tcr.drivertel"/>
+        <result property="beginplace" column="beginplace"/>
+        <result property="endplace" column="endplace"/>
+        <result property="reason" column="reason"/>
+        <result property="beginnumber" column="beginnumber"/>
+        <result property="endnumber" column="endnumber"/>
+        <result property="mileage" column="mileage"/>
+        <result property="remark" column="tcr.remark"/>
+        <result property="type" column="tcr.type"/>
+        <result property="status" column="tcr.status"/>
+        <result column="tcc.number" property="tCarNum"/>
+    </resultMap>
+    <select id="selectTCarByCondition" resultMap="tCarRunMap">
+        select
+        <include refid="BASE_COLUMN_LIST"/>
+            from t_car_run tcr
+	        left join t_car_car tcc on tcc.id = tcr.carid
+        <!-- 如果QueryWrapper存在的话，就拼where条件-->
+        <if test="ew.emptyOfWhere == false">
+            ${ew.customSqlSegment}
+        </if>
+    </select>
+    <select id="selectUseCompany" resultType="java.lang.String">
+        select distinct tcc.usecompany from t_car_car tcc
+    </select>
+    <select id="selectNumberByUseCompany" resultType="java.lang.String">
+        select tcc.number
+        from t_car_car tcc
+        left join t_car_run tcr on tcr.carid = tcc.id
+        where tcc.usecompany = #{number}
+    </select>
+    <select id="selectYearAndMonth" resultType="io.renren.modules.generator.entity.YearMonthEntity">
+        select distinct CONVERT(varchar,DATEPART(yy,begintime)) 'year'
+        ,convert(varchar,DATEPART(MM,begintime)) 'month',
+        CONVERT(varchar,DATEPART(yy,begintime))
+        +'-'+convert(varchar,DATEPART(MM,begintime)) 'yearmonth'
+        from t_car_run
+    </select>
+
+
+</mapper>

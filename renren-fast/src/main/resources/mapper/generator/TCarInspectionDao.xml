@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.generator.dao.TCarInspectionDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.modules.generator.entity.TCarInspectionEntity" id="tCarInspectionMap">
+        <result property="id" column="id"/>
+        <result property="carid" column="carid"/>
+        <result property="number" column="number"/>
+        <result property="njdate" column="njdate"/>
+        <result property="njcost" column="njcost"/>
+        <result property="adminoffice" column="adminoffice"/>
+        <result property="expiredate" column="expiredate"/>
+        <result property="remark" column="remark"/>
+        <result property="transactor" column="transactor"/>
+        <result property="carnum" column="carnum"/>
+    </resultMap>
+    <select id="selectTCarByCondition" resultMap="tCarInspectionMap">
+        select tci.* from t_car_inspection tci
+		    left join t_car_car tcc on tcc.id = tci.carid
+		    ${ew.customSqlSegment}
+    </select>
+
+
+</mapper>
