@@ -110,8 +110,8 @@ public class TCarCarController {
      */
     @RequestMapping("/updateDriver")
     @RequiresPermissions("generator:tcarcar:update")
-    public R update(@RequestParam Map<String,Object> map){
-        tCarCarService.updateDriverByCarId(map);
+    public R update(@RequestBody Map<String,Object> data){
+        tCarCarService.updateDriverByCarId(data);
         return R.ok();
     }
 

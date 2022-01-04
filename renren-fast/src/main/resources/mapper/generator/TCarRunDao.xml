@@ -53,7 +53,7 @@
         select distinct tcc.usecompany from t_car_car tcc
     </select>
     <select id="selectNumberByUseCompany" resultType="java.lang.String">
-        select tcc.number
+        select distinct tcc.number
         from t_car_car tcc
         left join t_car_run tcr on tcr.carid = tcc.id
         where tcc.usecompany = #{number}

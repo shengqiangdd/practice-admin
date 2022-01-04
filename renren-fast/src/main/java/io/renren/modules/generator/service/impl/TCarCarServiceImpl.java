@@ -230,6 +230,9 @@ public class TCarCarServiceImpl extends ServiceImpl<TCarCarDao, TCarCarEntity> i
             if (tCarCar.getType() != null) {
                 queryWrapper.eq("tcc.[type]", tCarCar.getType());
             }
+            if (tCarCar.getSeating() != null) {
+                queryWrapper.eq("tcc.[seating]", tCarCar.getSeating());
+            }
             if (!StringUtils.isEmpty(tCarCar.getCompany())) {
                 queryWrapper.eq("tcc.[company]", tCarCar.getCompany());
             }

@@ -20,7 +20,7 @@
         tcr.status 'status'
     </sql>
 
-	<!-- 可根据自己的需求，是否要使用 -->
+    <!-- 可根据自己的需求，是否要使用 -->
     <resultMap type="io.renren.modules.generator.entity.TCarCarEntity" id="tCarCarMap">
         <result property="id" column="tcc.id"/>
         <result property="number" column="tcc.number"/>
@@ -107,5 +107,12 @@
             ${ew.customSqlSegment}
         </if>
     </select>
+    <update id="updateDriverByCarId">
+        update tcc set carid = #{carId}
+        from t_car_cardriver tcc
+        inner join t_car_driver tcd on tcc.driverid = tcd.id
+        inner join t_car_car tc on tcc.carid = tc.id
+        where tcc.driverid = #{driverId};
+    </update>
 
 </mapper>

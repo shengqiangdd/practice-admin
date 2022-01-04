@@ -46,7 +46,7 @@ public class TCarDriverServiceImpl extends ServiceImpl<TCarDriverDao, TCarDriver
         }
         QueryWrapper queryWrapper = new QueryWrapper();
         if (params.get("cid") != null) {
-            queryWrapper.eq("tcd.id",params.get("cid"));
+            queryWrapper.eq("tc.id",params.get("cid"));
         }
         // 构造分页参数
         Page<TCarDriverEntity> page = new Page<>(index,limit);
