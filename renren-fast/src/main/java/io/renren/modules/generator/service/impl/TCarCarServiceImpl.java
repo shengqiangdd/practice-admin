@@ -132,35 +132,17 @@ public class TCarCarServiceImpl extends ServiceImpl<TCarCarDao, TCarCarEntity> i
                     }
                     entityMap.put(j, entity);
                     numDayList.put(carid, entityMap);
-//                    Stream<TCarStateEntity> tCarStateEntityStream =
-//                            list.stream().filter(l -> {
-//                                return dateFormat(l.getBegintime()).equals(entity.getDate());
-//                            });
-//                    if (tCarStateEntityStream != null) {
-//                        tCarStateEntityStream.forEach(t -> {
-//                            if (t.getStatus() != null && t.getStatus() == 1) {
-//                                entity.setCarnum(t.getCarnum());
-//                                entity.setValue("出车");
-//                                entity.setColor("red");
-//                            }
-//                        });
-//                    }
-
                 }
             }
             Set<Integer> integers = numDayList.keySet();
             List<Integer> IdList = new ArrayList<>();
             List<Integer> dayList = new ArrayList<>();
             List<TCarStatusEntity> entities = null;
-            Map<Integer, TCarStatusEntity> map1 = null;
-            List<Map<Integer, TCarStatusEntity>> mapList = new ArrayList<>();
             JSONArray dayArray = new JSONArray();
-            Integer[][] iArray = new Integer[][]{};
             for (Integer i : integers) {
                 IdList.add(i);
                 Map<Integer, TCarStatusEntity> dataMap = numDayList.get(i);
                 Set<Integer> integers1 = dataMap.keySet();
-                map1 = new HashMap<>();
                 dayArray.clear();
                 entities = Arrays.asList(new TCarStatusEntity[day + 1]);
                 for (Integer k : integers1) {
@@ -175,7 +157,6 @@ public class TCarCarServiceImpl extends ServiceImpl<TCarCarDao, TCarCarEntity> i
                     }
                 }
             }
-            System.out.println(jsonObject);
         } else {
             list = this.baseMapper.selectTCarStatus(queryWrapper);
         }
