@@ -2,12 +2,16 @@ package io.renren.modules.generator.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
 public class TCarStatusEntity {
+
+    public TCarStatusEntity() {
+        this.setValue("空闲");
+        this.setColor("green");
+    }
+
     private Integer key;
     private String label;
     private String date;

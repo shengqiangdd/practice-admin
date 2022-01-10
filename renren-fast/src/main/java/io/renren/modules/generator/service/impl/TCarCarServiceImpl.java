@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.renren.common.utils.R;
 import io.renren.modules.generator.entity.*;
 import javafx.scene.control.Pagination;
+import org.joda.time.DateTime;
+import org.joda.time.Days;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.alibaba.druid.util.StringUtils;
@@ -13,6 +15,7 @@ import com.alibaba.druid.util.StringUtils;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -98,37 +101,72 @@ public class TCarCarServiceImpl extends ServiceImpl<TCarCarDao, TCarCarEntity> i
         Map<Integer, TCarStatusEntity> entityMap = null;
         JSONObject jsonObject = new JSONObject();
         JSONArray dataArray = new JSONArray();
+        String type = map.get("type").toString();
+        List<DateTime> dateTimeList = Arrays.asList(new DateTime[8]);
+
+        list = (List<TCarStateEntity>) this.baseMapper.selectTCarStatus(queryWrapper).stream().distinct().collect(Collectors.toList());
         if (!StringUtils.isEmpty(begintime) && !StringUtils.isEmpty(endtime)) {
-            queryWrapper.between("tcr.begintime", begintime, endtime);
-            list = this.baseMapper.selectTCarStatus(queryWrapper);
-            String[] dates = begintime.split("-");
-            int day = getDayOfMonth(begintime, "yyyy-MM-dd");
+//            queryWrapper.between("tcr.begintime", begintime, endtime);
+            DateTime beginDateTime = new DateTime(begintime);
+            DateTime endDateTime = new DateTime(endtime);
+            DateTime currentDateTime = null;
+            for (int i = 0; i < 7; i++) {
+                currentDateTime = beginDateTime.plusDays(i);
+                dateTimeList.set(i + 1, currentDateTime);
+            }
+            String[] dates = endtime.split("-");
+            String[] beginDates = begintime.split("-");
+            int day = Integer.parseInt(dates[2]);
+            int startIndex = 1;
+            if (type.equals("week")) {
+                day = 7;
+            }
             for (int i = 0; i < list.size(); i++) {
                 String carnum = list.get(i).getCarnum();
                 int carid = list.get(i).getCarid().intValue();
-                final Date carBeginTime = list.get(i).getBegintime();
+                Integer status = list.get(i).getStatus();
+                DateTime startTime = new DateTime(list.get(i).getBegintime());
+                DateTime endTime = new DateTime(list.get(i).getEndtime());
+                String carBeginTime = startTime.toString("yyyy-MM-dd");
+                String carEndTime = endTime.toString("yyyy-MM-dd");
+                int betweenDays = Days.daysBetween(startTime, endTime).getDays();
                 entityMap = new HashMap<>();
-                for (int j = 1; j <= day; j++) {
+                for (int j = startIndex; j <= day; j++) {
                     TCarStatusEntity entity = new TCarStatusEntity();
+                    if (numDayList.get(carid) != null && numDayList.get(carid).get(j) != null) {
+                        entity = numDayList.get(carid).get(j);
+                    }
                     entity.setKey(j);
                     entity.setLabel(dates[1] + "-" + (j < 10 ? "0" + j : j));
                     entity.setDate(dates[0] + "-" + dates[1] + "-" + (j < 10 ? "0" + j : j));
+                    if (type.equals("week")) {
+                        int dayOfWeek = dateTimeList.get(j).getDayOfWeek();
+                        entity.setKey(dayOfWeek);
+                        entity.setLabel(weekFormat(dayOfWeek) +dateTimeList.get(j).toString("MM-dd"));
+                        entity.setDate(dateTimeList.get(j).toString("yyyy-MM-dd"));
+                    }
                     if (monthEntities.size() < day) {
                         TCarStatusEntity statusEntity = new TCarStatusEntity();
                         statusEntity.setKey(j);
-                        statusEntity.setLabel(dates[1] + "-" + (j < 10 ? "0" + j : j));
-                        statusEntity.setDate(dates[0] + "-" + dates[1] + "-" + (j < 10 ? "0" + j : j));
+                        statusEntity.setLabel(entity.getLabel());
+                        statusEntity.setDate(entity.getDate());
                         monthEntities.add(statusEntity);
                     }
-                    entity.setColor("green");
-                    entity.setValue("空闲");
                     entity.setCarnum(carnum);
                     entity.setCarid(carid);
-                    if (entity.getDate().equals(dateFormat(carBeginTime))
-                            && list.get(i).getStatus() != null
-                            && list.get(i).getStatus() == 1) {
+                    if (carBeginTime.equals(entity.getDate())
+                            && status != null && status == 1) {
                         entity.setColor("red");
                         entity.setValue("出车");
+                        for (int k = 1; k <= betweenDays; k++) {
+                            TCarStatusEntity carStatusEntity = new TCarStatusEntity();
+                            carStatusEntity.setColor("red");
+                            carStatusEntity.setValue("出车");
+                            if (j+k <= day) {
+                                entityMap.put(j+k, carStatusEntity);
+                                numDayList.put(carid, entityMap);
+                            }
+                        }
                     }
                     entityMap.put(j, entity);
                     numDayList.put(carid, entityMap);
@@ -157,9 +195,8 @@ public class TCarCarServiceImpl extends ServiceImpl<TCarCarDao, TCarCarEntity> i
                     }
                 }
             }
-        } else {
-            list = this.baseMapper.selectTCarStatus(queryWrapper);
         }
+
         return R.ok().put("list", list).put("dlist", dataArray).put("dates", monthEntities);
     }
 
@@ -167,14 +204,14 @@ public class TCarCarServiceImpl extends ServiceImpl<TCarCarDao, TCarCarEntity> i
     public Integer updateDriverByCarId(Map<String, Object> map) {
         Integer driverId = (Integer) map.get("driverId");
         Integer carId = (Integer) map.get("carId");
-        return this.baseMapper.updateDriverByCarId(driverId,carId);
+        return this.baseMapper.updateDriverByCarId(driverId, carId);
     }
 
     private List<Tree> getTrees(List<String> list, List<Long> list1, String type) {
         List<Tree> treeList = new ArrayList<>();
         if (list1 != null) {
             for (int i = 0; i < list1.size(); i++) {
-                Tree tree = new Tree(i + 2 *  7, list1.get(i) == 1 ?
+                Tree tree = new Tree(i + 2 * 7, list1.get(i) == 1 ?
                         "小轿车" : list1.get(i) == 2 ? "大货车" : "",
                         String.valueOf(list1.get(i)));
                 treeList.add(tree);
@@ -198,7 +235,8 @@ public class TCarCarServiceImpl extends ServiceImpl<TCarCarDao, TCarCarEntity> i
     private QueryWrapper insCondition(TCarCarEntity tCarCar, Map<String, Object> params) {
         QueryWrapper queryWrapper = new QueryWrapper();
         // 如果tCarCar不为空，然后它的属性不为空，分别加上构造条件
-        if (tCarCar != null) {
+        Optional<TCarCarEntity> car = Optional.ofNullable(tCarCar);
+        if (car.isPresent()) {
             if (!StringUtils.isEmpty(tCarCar.getNumber())) {
                 queryWrapper.eq("tcc.[number]", tCarCar.getNumber());
             }
@@ -255,8 +293,39 @@ public class TCarCarServiceImpl extends ServiceImpl<TCarCarDao, TCarCarEntity> i
     }
 
     private String dateFormat(Date date) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        return sdf.format(date);
+        if (date != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            return sdf.format(date);
+        }
+        return "";
+    }
+
+    private String weekFormat(int day) {
+        String week = "";
+        switch (day) {
+            case 1:
+                week = "星期一";
+                break;
+            case 2:
+                week = "星期二";
+                break;
+            case 3:
+                week = "星期三";
+                break;
+            case 4:
+                week = "星期四";
+                break;
+            case 5:
+                week = "星期五";
+                break;
+            case 6:
+                week = "星期六";
+                break;
+            case 7:
+                week = "星期天";
+                break;
+        }
+        return week;
     }
 
 }
