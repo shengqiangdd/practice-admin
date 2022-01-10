@@ -16,8 +16,7 @@
 
     <sql id="TWO_BASE_COLUMN_LIST">
         tcc.id 'carid',tcr.[if] 'id',tcc.number 'carnum',tcr.begintime,tcr.endtime,
-        tcr.driver,tcr.drivertel,tcr.type 'tcr.type',
-        tcr.status 'status'
+        tcr.driver,tcr.drivertel,tcr.status 'status'
     </sql>
 
     <!-- 可根据自己的需求，是否要使用 -->
