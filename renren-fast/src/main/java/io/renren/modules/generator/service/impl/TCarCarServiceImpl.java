@@ -104,7 +104,8 @@ public class TCarCarServiceImpl extends ServiceImpl<TCarCarDao, TCarCarEntity> i
         String type = map.get("type").toString();
         List<DateTime> dateTimeList = Arrays.asList(new DateTime[8]);
 
-        list = (List<TCarStateEntity>) this.baseMapper.selectTCarStatus(queryWrapper).stream().distinct().collect(Collectors.toList());
+        list = (List<TCarStateEntity>) this.baseMapper.selectTCarStatus(queryWrapper)
+                .stream().distinct().collect(Collectors.toList());
         if (!StringUtils.isEmpty(begintime) && !StringUtils.isEmpty(endtime)) {
 //            queryWrapper.between("tcr.begintime", begintime, endtime);
             DateTime beginDateTime = new DateTime(begintime);
@@ -137,12 +138,12 @@ public class TCarCarServiceImpl extends ServiceImpl<TCarCarDao, TCarCarEntity> i
                         entity = numDayList.get(carid).get(j);
                     }
                     entity.setKey(j);
-                    entity.setLabel(dates[1] + "-" + (j < 10 ? "0" + j : j));
-                    entity.setDate(dates[0] + "-" + dates[1] + "-" + (j < 10 ? "0" + j : j));
+                    entity.setLabel(beginDateTime.plusDays(j - 1).toString("MM-dd"));
+                    entity.setDate(beginDateTime.plusDays(j - 1).toString("yyyy-MM-dd"));
                     if (type.equals("week")) {
                         int dayOfWeek = dateTimeList.get(j).getDayOfWeek();
                         entity.setKey(dayOfWeek);
-                        entity.setLabel(weekFormat(dayOfWeek) +dateTimeList.get(j).toString("MM-dd"));
+                        entity.setLabel(weekFormat(dayOfWeek) + dateTimeList.get(j).toString("MM-dd"));
                         entity.setDate(dateTimeList.get(j).toString("yyyy-MM-dd"));
                     }
                     if (monthEntities.size() < day) {
@@ -156,20 +157,26 @@ public class TCarCarServiceImpl extends ServiceImpl<TCarCarDao, TCarCarEntity> i
                     entity.setCarid(carid);
                     if (carBeginTime.equals(entity.getDate())
                             && status != null && status == 1) {
+                        System.out.println(carBeginTime + "=>" + entity.getDate());
                         entity.setColor("red");
                         entity.setValue("出车");
                         for (int k = 1; k <= betweenDays; k++) {
                             TCarStatusEntity carStatusEntity = new TCarStatusEntity();
                             carStatusEntity.setColor("red");
                             carStatusEntity.setValue("出车");
-                            if (j+k <= day) {
-                                entityMap.put(j+k, carStatusEntity);
+                            if (j + k <= day) {
+                                entityMap.put(j + k, carStatusEntity);
                                 numDayList.put(carid, entityMap);
                             }
                         }
                     }
                     entityMap.put(j, entity);
-                    numDayList.put(carid, entityMap);
+                    if (numDayList.get(carid) != null
+                        && numDayList.get(carid).get(j) != null) {
+                        numDayList.get(carid).replace(j,entity);
+                    } else {
+                        numDayList.put(carid, entityMap);
+                    }
                 }
             }
             Set<Integer> integers = numDayList.keySet();
