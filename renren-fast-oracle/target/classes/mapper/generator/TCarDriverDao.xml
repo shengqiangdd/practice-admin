@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.generator.dao.TCarDriverDao">
+
+    <sql id="BASE_COLUMN_LIST">
+        tcd.id "tcd.id",tcd.name "tcd.name",tcd.sex "tcd.sex",tcd.tel,
+        tcd."type" "tcd.type",tcd.remark "tcd.remark"
+    </sql>
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.modules.generator.entity.TCarDriverEntity" id="tCarDriverMap">
+        <result property="id" column="tcd.id"/>
+        <result property="name" column="tcd.name"/>
+        <result property="sex" column="tcd.sex"/>
+        <result property="tel" column="tel"/>
+        <result property="type" column="tcd.type"/>
+        <result property="remark" column="tcd.remark"/>
+    </resultMap>
+    <select id="selectTCarByCondition" resultMap="tCarDriverMap">
+        select distinct
+        <include refid="BASE_COLUMN_LIST"/>
+        from t_car_driver tcd
+        left join t_car_cardriver tcc on tcc.driverid = tcd.id
+        left join t_car_car tc on tc.id = tcc.carid
+        ${ew.customSqlSegment}
+    </select>
+
+
+</mapper>
