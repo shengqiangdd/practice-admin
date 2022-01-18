@@ -105,18 +105,18 @@ public class TCarCarServiceImpl extends ServiceImpl<TCarCarDao, TCarCarEntity> i
         List<DateTime> dateTimeList = Arrays.asList(new DateTime[8]);
 
         list = this.baseMapper.selectTCarStatus(queryWrapper);
-        if (!StringUtils.isEmpty(begintime) && !StringUtils.isEmpty(endtime)) {
-//            queryWrapper.between("tcr.begintime", begintime, endtime);
+        if (StringUtils.isEmpty(begintime) && StringUtils.isEmpty(endtime)) {
+            begintime = new DateTime(new Date()).dayOfMonth().withMinimumValue().toString("yyyy-MM-dd"); // 当前月第一天
+            endtime = new DateTime(new Date()).dayOfMonth().withMaximumValue().toString("yyyy-MM-dd"); // 当前月最后一天
+        }
             DateTime beginDateTime = new DateTime(begintime);
             DateTime endDateTime = new DateTime(endtime);
             DateTime currentDateTime = null;
             for (int i = 0; i < 7; i++) {
                 currentDateTime = beginDateTime.plusDays(i);
-                dateTimeList.set(i + 1, currentDateTime);
+                dateTimeList.set(i + 1, currentDateTime); // 一个星期的列表
             }
-            String[] dates = endtime.split("-");
-            String[] beginDates = begintime.split("-");
-            int day = Integer.parseInt(dates[2]);
+            int day = endDateTime.getDayOfMonth();
             int startIndex = 1;
             if (type.equals("week")) {
                 day = 7;
@@ -128,23 +128,24 @@ public class TCarCarServiceImpl extends ServiceImpl<TCarCarDao, TCarCarEntity> i
                 Integer status = list.get(i).getStatus();
                 DateTime startTime = new DateTime(list.get(i).getBegintime());
                 DateTime endTime = new DateTime(list.get(i).getEndtime());
-                String carBeginTime = startTime.toString("yyyy-MM-dd");
-                String carEndTime = endTime.toString("yyyy-MM-dd");
+                String carBeginTime = startTime.toString("yyyy-MM-dd"); // 当前车的开始日期
+                String carEndTime = endTime.toString("yyyy-MM-dd"); // 当前车的结束日期
                 int betweenDays = Days.daysBetween(startTime, endTime).getDays();
                 entityMap = new HashMap<>();
                 for (int j = startIndex; j <= day; j++) {
                     TCarStatusEntity entity = new TCarStatusEntity();
-                    if (numDayList.get(id) != null && numDayList.get(id).get(j) != null) {
+                    if (numDayList.get(id) != null && numDayList.get(id).get(j) != null) { // 下面设置的从开始日期到结束日期出车成功则开始日期到结束日期的元素都可以直接获取到
                         entity = numDayList.get(id).get(j);
                     }
-                    entity.setKey(j);
-                    entity.setLabel(beginDateTime.plusDays(j - 1).toString("MM-dd"));
-                    entity.setDate(beginDateTime.plusDays(j - 1).toString("yyyy-MM-dd"));
                     if (type.equals("week")) {
                         int dayOfWeek = dateTimeList.get(j).getDayOfWeek();
                         entity.setKey(dayOfWeek);
                         entity.setLabel(weekFormat(dayOfWeek) + dateTimeList.get(j).toString("MM-dd"));
                         entity.setDate(dateTimeList.get(j).toString("yyyy-MM-dd"));
+                    } else {
+                        entity.setKey(j);
+                        entity.setLabel(beginDateTime.plusDays(j - 1).toString("MM-dd"));
+                        entity.setDate(beginDateTime.plusDays(j - 1).toString("yyyy-MM-dd"));
                     }
                     if (monthEntities.size() < day) {
                         TCarStatusEntity statusEntity = new TCarStatusEntity();
@@ -156,10 +157,10 @@ public class TCarCarServiceImpl extends ServiceImpl<TCarCarDao, TCarCarEntity> i
                     entity.setCarnum(carnum);
                     entity.setCarid(carid);
                     if (carBeginTime.equals(entity.getDate())
-                            && status != null && status == 1) {
+                            && status != null && status == 1) { // 判断生成的日期跟当前车的开始日期是否相等，相等即设置出车状态
                         entity.setColor("red");
                         entity.setValue("出车");
-                        for (int k = 1; k <= betweenDays; k++) {
+                        for (int k = 1; k <= betweenDays; k++) { // 从车的开始日期到结束日期都设置出车状态
                             TCarStatusEntity carStatusEntity = new TCarStatusEntity();
                             carStatusEntity.setColor("red");
                             carStatusEntity.setValue("出车");
@@ -171,7 +172,7 @@ public class TCarCarServiceImpl extends ServiceImpl<TCarCarDao, TCarCarEntity> i
                     }
                     entityMap.put(j, entity);
                     if (numDayList.get(id) != null
-                        && numDayList.get(id).get(j) != null) {
+                        && numDayList.get(id).get(j) != null) { // 如果list存在该id索引则替换掉该id索引的值
                         numDayList.get(id).replace(j,entity);
                     } else {
                         numDayList.put(id, entityMap);
@@ -183,7 +184,7 @@ public class TCarCarServiceImpl extends ServiceImpl<TCarCarDao, TCarCarEntity> i
             List<Integer> dayList = new ArrayList<>();
             List<TCarStatusEntity> entities = null;
             JSONArray dayArray = new JSONArray();
-            for (Integer i : integers) {
+            for (Integer i : integers) { // 遍历map转换为list
                 IdList.add(i);
                 Map<Integer, TCarStatusEntity> dataMap = numDayList.get(i);
                 Set<Integer> integers1 = dataMap.keySet();
@@ -201,7 +202,6 @@ public class TCarCarServiceImpl extends ServiceImpl<TCarCarDao, TCarCarEntity> i
                     }
                 }
             }
-        }
 
         return R.ok().put("list", list).put("dlist", dataArray).put("dates", monthEntities);
     }
