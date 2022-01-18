@@ -104,107 +104,109 @@ public class TCarCarServiceImpl extends ServiceImpl<TCarCarDao, TCarCarEntity> i
         String type = map.get("type").toString();
         List<DateTime> dateTimeList = Arrays.asList(new DateTime[8]);
 
-        list = (List<TCarStateEntity>) this.baseMapper.selectTCarStatus(queryWrapper)
-                .stream().distinct().collect(Collectors.toList());
-        if (!StringUtils.isEmpty(begintime) && !StringUtils.isEmpty(endtime)) {
-//            queryWrapper.between("tcr.begintime", begintime, endtime);
-            DateTime beginDateTime = new DateTime(begintime);
-            DateTime endDateTime = new DateTime(endtime);
-            DateTime currentDateTime = null;
-            for (int i = 0; i < 7; i++) {
-                currentDateTime = beginDateTime.plusDays(i);
-                dateTimeList.set(i + 1, currentDateTime);
-            }
-            String[] dates = endtime.split("-");
-            String[] beginDates = begintime.split("-");
-            int day = Integer.parseInt(dates[2]);
-            int startIndex = 1;
-            if (type.equals("week")) {
-                day = 7;
-            }
-            for (int i = 0; i < list.size(); i++) {
-                String carnum = list.get(i).getCarnum();
-                int carid = list.get(i).getCarid().intValue();
-                Integer status = list.get(i).getStatus();
-                DateTime startTime = new DateTime(list.get(i).getBegintime());
-                DateTime endTime = new DateTime(list.get(i).getEndtime());
-                String carBeginTime = startTime.toString("yyyy-MM-dd");
-                String carEndTime = endTime.toString("yyyy-MM-dd");
-                int betweenDays = Days.daysBetween(startTime, endTime).getDays();
-                entityMap = new HashMap<>();
-                for (int j = startIndex; j <= day; j++) {
-                    TCarStatusEntity entity = new TCarStatusEntity();
-                    if (numDayList.get(carid) != null && numDayList.get(carid).get(j) != null) {
-                        entity = numDayList.get(carid).get(j);
-                    }
+        list = this.baseMapper.selectTCarStatus(queryWrapper);
+        if (StringUtils.isEmpty(begintime) && StringUtils.isEmpty(endtime)) {
+            begintime = new DateTime(new Date()).dayOfMonth().withMinimumValue().toString("yyyy-MM-dd"); // 当前月第一天
+            endtime = new DateTime(new Date()).dayOfMonth().withMaximumValue().toString("yyyy-MM-dd"); // 当前月最后一天
+        }
+        DateTime beginDateTime = new DateTime(begintime);
+        DateTime endDateTime = new DateTime(endtime);
+        DateTime currentDateTime = null;
+        for (int i = 0; i < 7; i++) {
+            currentDateTime = beginDateTime.plusDays(i);
+            dateTimeList.set(i + 1, currentDateTime); // 一个星期的列表
+        }
+        int day;
+        int startIndex = 1;
+        if (type.equals("week")) {
+            day = 7;
+        } else {
+            day = endDateTime.getDayOfMonth();
+        }
+        for (int i = 0; i < list.size(); i++) {
+            String carnum = list.get(i).getCarnum();
+            int carid = list.get(i).getCarid().intValue();
+            int id = list.get(i).getId().intValue();
+            Integer status = list.get(i).getStatus();
+            DateTime startTime = new DateTime(list.get(i).getBegintime());
+            DateTime endTime = new DateTime(list.get(i).getEndtime());
+            String carBeginTime = startTime.toString("yyyy-MM-dd"); // 当前车的开始日期
+            String carEndTime = endTime.toString("yyyy-MM-dd"); // 当前车的结束日期
+            int betweenDays = Days.daysBetween(startTime, endTime).getDays(); // 两个日期的相差天数
+            entityMap = new HashMap<>();
+            for (int j = startIndex; j <= day; j++) {
+                TCarStatusEntity entity = new TCarStatusEntity();
+                if (numDayList.get(id) != null && numDayList.get(id).get(j) != null) { // 下面设置的从开始日期到结束日期出车成功则开始日期到结束日期的元素都可以直接获取到
+                    entity = numDayList.get(id).get(j);
+                }
+                if (type.equals("week")) {
+                    int dayOfWeek = dateTimeList.get(j).getDayOfWeek();
+                    entity.setKey(dayOfWeek);
+                    entity.setLabel(weekFormat(dayOfWeek) + dateTimeList.get(j).toString("MM-dd"));
+                    entity.setDate(dateTimeList.get(j).toString("yyyy-MM-dd"));
+                } else {
                     entity.setKey(j);
                     entity.setLabel(beginDateTime.plusDays(j - 1).toString("MM-dd"));
                     entity.setDate(beginDateTime.plusDays(j - 1).toString("yyyy-MM-dd"));
-                    if (type.equals("week")) {
-                        int dayOfWeek = dateTimeList.get(j).getDayOfWeek();
-                        entity.setKey(dayOfWeek);
-                        entity.setLabel(weekFormat(dayOfWeek) + dateTimeList.get(j).toString("MM-dd"));
-                        entity.setDate(dateTimeList.get(j).toString("yyyy-MM-dd"));
-                    }
-                    if (monthEntities.size() < day) {
-                        TCarStatusEntity statusEntity = new TCarStatusEntity();
-                        statusEntity.setKey(j);
-                        statusEntity.setLabel(entity.getLabel());
-                        statusEntity.setDate(entity.getDate());
-                        monthEntities.add(statusEntity);
-                    }
-                    entity.setCarnum(carnum);
-                    entity.setCarid(carid);
-                    if (carBeginTime.equals(entity.getDate())
-                            && status != null && status == 1) {
-                        System.out.println(carBeginTime + "=>" + entity.getDate());
-                        entity.setColor("red");
-                        entity.setValue("出车");
-                        for (int k = 1; k <= betweenDays; k++) {
-                            TCarStatusEntity carStatusEntity = new TCarStatusEntity();
-                            carStatusEntity.setColor("red");
-                            carStatusEntity.setValue("出车");
-                            if (j + k <= day) {
-                                entityMap.put(j + k, carStatusEntity);
-                                numDayList.put(carid, entityMap);
-                            }
+                }
+                if (monthEntities.size() < day) {
+                    TCarStatusEntity statusEntity = new TCarStatusEntity();
+                    statusEntity.setKey(j);
+                    statusEntity.setLabel(entity.getLabel());
+                    statusEntity.setDate(entity.getDate());
+                    monthEntities.add(statusEntity);
+                }
+                entity.setCarnum(carnum);
+                entity.setCarid(carid);
+                if (carBeginTime.equals(entity.getDate())
+                        && status != null && status == 1) { // 判断生成的日期跟当前车的开始日期是否相等，相等即设置出车状态
+                    entity.setColor("red");
+                    entity.setValue("出车");
+                    for (int k = 1; k <= betweenDays; k++) { // 从车的开始日期到结束日期都设置出车状态
+                        TCarStatusEntity carStatusEntity = new TCarStatusEntity();
+                        carStatusEntity.setColor("red");
+                        carStatusEntity.setValue("出车");
+                        if (j + k <= day) {
+                            entityMap.put(j + k, carStatusEntity);
+                            numDayList.put(id, entityMap);
                         }
                     }
-                    entityMap.put(j, entity);
-                    if (numDayList.get(carid) != null
-                        && numDayList.get(carid).get(j) != null) {
-                        numDayList.get(carid).replace(j,entity);
-                    } else {
-                        numDayList.put(carid, entityMap);
-                    }
+                }
+                entityMap.put(j, entity);
+                if (numDayList.get(id) != null
+                        && numDayList.get(id).get(j) != null) { // 如果list存在该id索引则替换掉该id索引的值
+                    numDayList.get(id).replace(j, entity);
+                } else {
+                    numDayList.put(id, entityMap);
                 }
             }
-            Set<Integer> integers = numDayList.keySet();
-            List<Integer> IdList = new ArrayList<>();
-            List<Integer> dayList = new ArrayList<>();
-            List<TCarStatusEntity> entities = null;
-            JSONArray dayArray = new JSONArray();
-            for (Integer i : integers) {
-                IdList.add(i);
-                Map<Integer, TCarStatusEntity> dataMap = numDayList.get(i);
-                Set<Integer> integers1 = dataMap.keySet();
-                dayArray.clear();
-                entities = Arrays.asList(new TCarStatusEntity[day + 1]);
-                for (Integer k : integers1) {
-                    dayList.add(k);
-                    dayArray.add(k);
-                    TCarStatusEntity entity = dataMap.get(k);
-                    dayArray.set(k, entities);
-                    entities.set(k, entity);
-                    if (k == integers1.size()) {
-                        jsonObject.put(i.toString(), entities);
-                        dataArray.set(i, entities);
-                    }
+        }
+        Set<Integer> integers = numDayList.keySet();
+        List<Integer> IdList = new ArrayList<>();
+        List<Integer> dayList = new ArrayList<>();
+        List<TCarStatusEntity> entities = null;
+        JSONArray dayArray = new JSONArray();
+        for (Integer i : integers) { // 遍历map转换为list
+            IdList.add(i);
+            Map<Integer, TCarStatusEntity> dataMap = numDayList.get(i);
+            Set<Integer> integers1 = dataMap.keySet();
+            dayArray.clear();
+            entities = Arrays.asList(new TCarStatusEntity[day + 1]);
+            for (Integer k : integers1) {
+                dayList.add(k);
+                dayArray.add(k);
+                TCarStatusEntity entity = dataMap.get(k);
+                dayArray.set(k, entities);
+                entities.set(k, entity);
+                if (k == integers1.size()) {
+                    jsonObject.put(i.toString(), entities);
+                    dataArray.set(i, entities);
                 }
             }
         }
 
-        return R.ok().put("list", list).put("dlist", dataArray).put("dates", monthEntities);
+        return R.ok().put("list", list).put("dlist", dataArray)
+                .put("dates", monthEntities).put("begin", begintime).put("end", endtime);
     }
 
     @Override
@@ -214,6 +216,13 @@ public class TCarCarServiceImpl extends ServiceImpl<TCarCarDao, TCarCarEntity> i
         return this.baseMapper.updateDriverByCarId(driverId, carId);
     }
 
+    /**
+     * 生成树列表数据
+     * @param list
+     * @param list1
+     * @param type
+     * @return
+     */
     private List<Tree> getTrees(List<String> list, List<Long> list1, String type) {
         List<Tree> treeList = new ArrayList<>();
         if (list1 != null) {

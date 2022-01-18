@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service("tCarRunService")
@@ -58,37 +59,32 @@ public class TCarRunServiceImpl extends ServiceImpl<TCarRunDao, TCarRunEntity> i
         for (int i = 0; i < comps.size(); i++) {
             List<String> list = this.baseMapper.selectNumberByUseCompany(comps.get(i));
             List<Tree> numTree = getTrees(list);
-            TCarRunTimeTree runTimeTree = new TCarRunTimeTree((i+1)*5,comps.get(i),null, numTree);
+            TCarRunTimeTree runTimeTree = new TCarRunTimeTree((i + 1) * 5, comps.get(i), null, numTree);
             useComTreeList.add(runTimeTree);
         }
         for (int i = 0; i < yearMonthEntities.size(); i++) {
-            final YearMonthEntity yearMonthEntity = yearMonthEntities.get(i);
-            final String year = yearMonthEntity.getYear();
-            TCarRunTimeTree timeTree = null;
-            for (int j = 1; j <= yearMonthEntities.size() -1; j++) {
-                YearMonthEntity yearMonth1 = yearMonthEntities.get(j);
-                final String year1 = yearMonth1.getYear();
-                if (year1 == year) {
-                    Integer month = Integer.parseInt(yearMonth1.getMonth());
-                    if (timeTree == null) {
-                        timeTree = new TCarRunTimeTree(Integer.parseInt(year1),year1+"年",
-                                year1,null);
-                    } else if (!timeTree.getLabel().equals(year1)) {
-                        timeTree.setLabel(year1+"年");
-                        timeTree.setKey(year1);
-                    }
-                    Tree tree = new Tree(j * 4, month + "月",
-                            month < 10 ? "0" + month : String.valueOf(month));
-                    monthTrees.add(tree);
-                    if (j == yearMonthEntities.size() -1) {
-                        timeTree.setChildren(monthTrees);
-                        timeTreeList.add(timeTree);
-                    }
-                }
+            String year = yearMonthEntities.get(i).getYear();
+            TCarRunTimeTree timeTree = new TCarRunTimeTree(Integer.parseInt(year), year + "年", year, null);
+            List<YearMonthEntity> entities = yearMonthEntities.stream()
+                    .filter(y -> y.getYear().equals(year))
+                    .collect(Collectors.toList());
+            monthTrees = new ArrayList<>();
+            for (YearMonthEntity m : entities) {
+                int month = Integer.parseInt(m.getMonth());
+                Tree tree = new Tree(i + month, month + "月",
+                        month < 10 ? "0" + month : String.valueOf(month));
+                monthTrees.add(tree);
             }
+            timeTree.setChildren(monthTrees);
+            List<TCarRunTimeTree> collect = timeTreeList.stream().filter(t -> t.getId() == Integer.parseInt(year))
+                    .collect(Collectors.toList());
+            if (collect.size() >= 1) {
+                continue;
+            }
+            timeTreeList.add(timeTree);
         }
-        TCarRunTypeTree tCarRunTypeTree = new TCarRunTypeTree(2L,"按使用单位", useComTreeList);
-        TCarRunTypeTree tCarRunTimeTree = new TCarRunTypeTree(3L,"按时间", timeTreeList);
+        TCarRunTypeTree tCarRunTypeTree = new TCarRunTypeTree(2L, "按使用单位", useComTreeList);
+        TCarRunTypeTree tCarRunTimeTree = new TCarRunTypeTree(3L, "按时间", timeTreeList);
         typeTrees.add(tCarRunTypeTree);
         typeTrees.add(tCarRunTimeTree);
         return typeTrees;
@@ -115,7 +111,7 @@ public class TCarRunServiceImpl extends ServiceImpl<TCarRunDao, TCarRunEntity> i
             final Object begintime = params.get("begintime");
             final Object endtime = params.get("endtime");
             if (begintime != null && endtime != null) {
-                queryWrapper.between("tcr.begintime",begintime,endtime);
+                queryWrapper.between("tcr.begintime", begintime, endtime);
             }
             String carnum = (String) params.get("carnum");
             if (!StringUtils.isEmpty(carnum)) {
