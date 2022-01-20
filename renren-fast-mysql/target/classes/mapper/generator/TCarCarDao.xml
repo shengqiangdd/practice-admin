@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.generator.dao.TCarCarDao">
+
+    <sql id="THREE_BASE_COLUMN_LIST">
+        tcc.id "tcc.id",tcc.`number` "tcc.number",tcc.brand,tcc.model,
+        tcc.`type` "tcc.type",tcc.color,tcc.`load` "tcc.load",tcc.seating,tcc.fuelconsumption,
+        tcc.initmileage,tcc.servicemileage,tcc.servicecycle,tcc.enginenumber,tcc.framenumber,
+        tcc.vendor,tcc.buyprice,tcc.buydate,tcc.company,tcc.deptid,tcc.deptid_name,
+        tcc.usecompany,tcc.usedept,tcc.status "tcc.status",tcc.remark "tcc.remark",tcc.isstop,
+        tci1.bxdate,tci1.expiredate "tci1.expiredate",
+        tci2.njdate,tci2.expiredate "tci2.expiredate"
+    </sql>
+
+    <sql id="TWO_BASE_COLUMN_LIST">
+        tcc.id "carid",tcr.id "id",tcc.number "carnum",tcr.begintime,tcr.endtime,
+        tcr.driver,tcr.drivertel,tcr.status "status"
+    </sql>
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.modules.generator.entity.TCarCarEntity" id="tCarCarMap">
+        <result property="id" column="tcc.id"/>
+        <result property="number" column="tcc.number"/>
+        <result property="brand" column="brand"/>
+        <result property="model" column="model"/>
+        <result property="type" column="tcc.type"/>
+        <result property="color" column="color"/>
+        <result property="load" column="load"/>
+        <result property="seating" column="seating"/>
+        <result property="fuelconsumption" column="fuelconsumption"/>
+        <result property="initmileage" column="initmileage"/>
+        <result property="servicemileage" column="servicemileage"/>
+        <result property="servicecycle" column="servicecycle"/>
+        <result property="enginenumber" column="enginenumber"/>
+        <result property="framenumber" column="framenumber"/>
+        <result property="vendor" column="vendor"/>
+        <result property="buyprice" column="buyprice"/>
+        <result property="buydate" column="tcc.buydate"/>
+        <result property="company" column="company"/>
+        <result property="deptid" column="deptid"/>
+        <result property="deptidName" column="deptid_name"/>
+        <result property="usecompany" column="usecompany"/>
+        <result property="usedept" column="usedept"/>
+        <result property="status" column="tcc.status"/>
+        <result property="remark" column="tcc.remark"/>
+        <result property="isstop" column="isstop"/>
+        <association property="inspection"
+                     column="tci2"
+                     javaType="io.renren.modules.generator.entity.TCarInspectionEntity"
+                     autoMapping="true">
+            <result column="tci2.expiredate" property="expiredate"/>
+        </association>
+        <association property="insurance"
+                     column="tci1"
+                     javaType="io.renren.modules.generator.entity.TCarInsuranceEntity"
+                     autoMapping="true">
+            <result column="tci1.expiredate" property="expiredate"/>
+        </association>
+        <association property="tCarRun"
+                     column="tcr"
+                     javaType="io.renren.modules.generator.entity.TCarRunEntity"
+                     autoMapping="true">
+            <result column="tcr.id" property="id" />
+        </association>
+    </resultMap>
+
+    <select id="selectTCarByCondition" resultMap="tCarCarMap">
+        select
+        <include refid="THREE_BASE_COLUMN_LIST"/>
+        from t_car_car tcc
+        left join t_car_Insurance tci1 on tci1.carid = tcc.id
+        left join t_car_inspection tci2 on tci2.carid = tcc.id
+        <!-- 如果QueryWrapper存在的话，就拼where条件-->
+        <if test="ew.emptyOfWhere == false">
+            ${ew.customSqlSegment}
+        </if>
+        order by tcc.id asc
+    </select>
+    <select id="selectTCarAndRunByCondition" resultMap="tCarCarMap">
+        select
+        <include refid="TWO_BASE_COLUMN_LIST"/>
+        from t_car_car tcc
+        left join t_car_run tcr on tcr.carid = tcc.id
+        <!-- 如果QueryWrapper存在的话，就拼where条件-->
+        <if test="ew.emptyOfWhere == false">
+            ${ew.customSqlSegment}
+        </if>
+    </select>
+    <select id="selectType" resultType="java.lang.Long">
+        select distinct `type` from t_car_car
+    </select>
+    <select id="selectCompany" resultType="java.lang.String">
+        select distinct company from t_car_car
+    </select>
+    <select id="selectUseCompnay" resultType="java.lang.String">
+        select distinct usecompany from t_car_car
+    </select>
+    <select id="selectTCarStatus" resultType="io.renren.modules.generator.entity.TCarStateEntity">
+        select
+        <include refid="TWO_BASE_COLUMN_LIST"/>
+        from t_car_car tcc
+        left join t_car_run tcr on tcr.carid = tcc.id
+        where tcr.id is not null
+        <!-- 如果QueryWrapper存在的话，就拼where条件-->
+        <if test="ew.emptyOfWhere == false">
+            ${ew.customSqlSegment}
+        </if>
+    </select>
+    <insert id="addDriverByCarId">
+        insert into t_car_cardriver(carid,driverid)
+        values (#{carId},#{driverId})
+    </insert>
+
+</mapper>

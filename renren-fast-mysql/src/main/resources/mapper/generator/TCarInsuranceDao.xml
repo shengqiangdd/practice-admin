@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.generator.dao.TCarInsuranceDao">
+
+    <sql id="BASE_COLUMN_LIST">
+        tci.id "tci.id",carid,tci.number "tci.number",bxdate,bxtype,cost,
+        amount,tci.company "tci.company",transactor,expiredate,
+        tci.remark "tci.remark",tci.usecompany "tci.usecompany",
+        carmodel,tcc.number "carnum"
+    </sql>
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="io.renren.modules.generator.entity.TCarInsuranceEntity" id="tCarInsuranceMap">
+        <result property="id" column="tci.id"/>
+        <result property="carid" column="carid"/>
+        <result property="number" column="tci.number"/>
+        <result property="bxdate" column="bxdate"/>
+        <result property="bxtype" column="bxtype"/>
+        <result property="cost" column="cost"/>
+        <result property="amount" column="amount"/>
+        <result property="company" column="tci.company"/>
+        <result property="transactor" column="transactor"/>
+        <result property="expiredate" column="expiredate"/>
+        <result property="remark" column="tci.remark"/>
+        <result property="usecompany" column="tci.usecompany"/>
+        <result property="carmodel" column="carmodel"/>
+        <result property="carnum" column="carnum"/>
+    </resultMap>
+    <select id="selectTCarByCondition" resultMap="tCarInsuranceMap">
+        select
+        <include refid="BASE_COLUMN_LIST"/>
+        from t_car_Insurance tci
+		left join t_car_car tcc on tcc.id = tci.carid
+		${ew.customSqlSegment}
+    </select>
+
+
+</mapper>
