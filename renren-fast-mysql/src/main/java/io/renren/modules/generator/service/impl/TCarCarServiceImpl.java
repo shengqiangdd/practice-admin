@@ -138,8 +138,9 @@ public class TCarCarServiceImpl extends ServiceImpl<TCarCarDao, TCarCarEntity> i
                 TCarStatusEntity entity = new TCarStatusEntity();
                 if (type.equals("week")) {
                     int dayOfWeek = dateTimeList.get(j).getDayOfWeek();
+                    String week = dateTimeList.get(j).dayOfWeek().getAsShortText();
                     entity.setKey(dayOfWeek);
-                    entity.setLabel(weekFormat(dayOfWeek) + dateTimeList.get(j).toString("MM-dd"));
+                    entity.setLabel(week + dateTimeList.get(j).toString("MM-dd"));
                     entity.setDate(dateTimeList.get(j).toString("yyyy-MM-dd"));
                 } else {
                     entity.setKey(j);
@@ -156,9 +157,10 @@ public class TCarCarServiceImpl extends ServiceImpl<TCarCarDao, TCarCarEntity> i
                 entity.setCarnum(carnum);
                 entity.setCarid(carid);
                 DateTime dateTime = new DateTime(entity.getDate()).withTimeAtStartOfDay();
-                if (startTime.isEqual(dateTime)
-                        || (dateTime.isAfter(startTime)
-                        && dateTime.isBefore(endTime))
+                if ((dateTime.isEqual(startTime)
+                        || dateTime.isAfter(startTime)
+                        && dateTime.isBefore(endTime)
+                        || dateTime.isEqual(endTime))
                         && status != null && status == 1) { // 判断生成的日期跟当前车的开始日期是否相等，相等即设置出车状态
                     entity.setColor("red");
                     entity.setValue("出车");
