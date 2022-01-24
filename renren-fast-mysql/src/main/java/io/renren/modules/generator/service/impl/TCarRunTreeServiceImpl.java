@@ -1,37 +1,42 @@
 package io.renren.modules.generator.service.impl;
 
-import org.springframework.stereotype.Service;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.renren.common.utils.PageUtils;
 import io.renren.common.utils.Query;
-
 import io.renren.modules.generator.dao.TCarDeptDao;
+import io.renren.modules.generator.dao.TCarRunTreeDao;
 import io.renren.modules.generator.entity.TCarDeptEntity;
+import io.renren.modules.generator.entity.TCarRunTreeEntity;
 import io.renren.modules.generator.service.TCarDeptService;
+import io.renren.modules.generator.service.TCarRunTreeService;
+import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 
-@Service("tCarDeptService")
-public class TCarDeptServiceImpl extends ServiceImpl<TCarDeptDao, TCarDeptEntity> implements TCarDeptService {
+@Service("tCarRunTreeService")
+public class TCarRunTreeServiceImpl extends ServiceImpl<TCarRunTreeDao, TCarRunTreeEntity> implements TCarRunTreeService {
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
-        IPage<TCarDeptEntity> page = this.page(
-                new Query<TCarDeptEntity>().getPage(params),
-                new QueryWrapper<TCarDeptEntity>()
+        IPage<TCarRunTreeEntity> page = this.page(
+                new Query<TCarRunTreeEntity>().getPage(params),
+                new QueryWrapper<TCarRunTreeEntity>()
         );
 
         return new PageUtils(page);
     }
 
     @Override
-    public List<TCarDeptEntity> selectAllDept() {
-        return this.getBaseMapper().selectAllDept();
+    public List<TCarRunTreeEntity> selectAllTree() {
+        return this.getBaseMapper().selectAllTree();
     }
 
     /**
@@ -39,14 +44,14 @@ public class TCarDeptServiceImpl extends ServiceImpl<TCarDeptDao, TCarDeptEntity
      * @return
      */
     @Override
-    public List<TCarDeptEntity> selectDeptAndChildren() {
-        List<TCarDeptEntity> entityList = this.baseMapper.selectAllDept();
+    public List<TCarRunTreeEntity> selectDeptAndChildren() {
+        List<TCarRunTreeEntity> entityList = this.baseMapper.selectAllTree();
 
         if (entityList == null || entityList.size() <= 0) {
             return null;
         }
 
-        LinkedList<TCarDeptEntity> linkedList = new LinkedList<>();
+        LinkedList<TCarRunTreeEntity> linkedList = new LinkedList<>();
 
         entityList.forEach(data -> {
             if (data.getParentId() == 0L) {
@@ -55,27 +60,22 @@ public class TCarDeptServiceImpl extends ServiceImpl<TCarDeptDao, TCarDeptEntity
         });
 
         linkedList.forEach(data -> {
-            data.setChildren(getChildren(data.getDeptid(),entityList));
+            data.setChildren(getChildren(data.getTreeId(),entityList));
         });
         return linkedList;
-    }
-
-    @Override
-    public List<TCarDeptEntity> selectAllUseCarPeople() {
-        return this.baseMapper.selectAllUseCarPeople();
     }
 
     /**
      * 递归获取子节点
      * @param parentId
-     * @param deptList
+     * @param treeList
      * @return
      */
-    List<TCarDeptEntity> getChildren(Long parentId,List<TCarDeptEntity> deptList) {
+    List<TCarRunTreeEntity> getChildren(Long parentId,List<TCarRunTreeEntity> treeList) {
         // 孩子集合
-        LinkedList<TCarDeptEntity> linkedList = new LinkedList<>();
+        LinkedList<TCarRunTreeEntity> linkedList = new LinkedList<>();
 
-        deptList.forEach(data -> {
+        treeList.forEach(data -> {
             if (parentId.equals(data.getParentId())) {
                 linkedList.add(data);
             }
@@ -87,10 +87,9 @@ public class TCarDeptServiceImpl extends ServiceImpl<TCarDeptDao, TCarDeptEntity
 
         // 把子节点的子节点再循环递归一遍
         linkedList.forEach(data -> {
-            data.setChildren(getChildren(data.getDeptid(),deptList));
+            data.setChildren(getChildren(data.getTreeId(),treeList));
         });
 
         return linkedList;
     }
-
 }

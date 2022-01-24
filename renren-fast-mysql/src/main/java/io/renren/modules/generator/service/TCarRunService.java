@@ -4,10 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.renren.common.utils.PageUtils;
-import io.renren.modules.generator.entity.TCarCarEntity;
-import io.renren.modules.generator.entity.TCarRunEntity;
-import io.renren.modules.generator.entity.TCarRunTypeTree;
-import io.renren.modules.generator.entity.TypeTree;
+import io.renren.modules.generator.entity.*;
 
 import java.util.List;
 import java.util.Map;
@@ -26,5 +23,9 @@ public interface TCarRunService extends IService<TCarRunEntity> {
     Page<TCarRunEntity> selectTCarByCondition(TCarRunEntity tCarRun, Map<String,Object> params);
 
     List<TCarRunTypeTree> selectTypeTree();
+
+    List<YearMonthEntity> selectYearAndMonth();
+
+    List<String> selectMonthByYear(String year);
 }
 

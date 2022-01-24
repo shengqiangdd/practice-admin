@@ -33,4 +33,6 @@ public interface TCarRunDao extends BaseMapper<TCarRunEntity> {
     List<String> selectNumberByUseCompany(String number);
 
     List<YearMonthEntity> selectYearAndMonth();
+
+    List<String> selectMonthByYear(String year);
 }

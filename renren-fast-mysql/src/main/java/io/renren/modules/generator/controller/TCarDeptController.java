@@ -1,8 +1,11 @@
 package io.renren.modules.generator.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import io.renren.modules.generator.dao.TCarDeptDao;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,6 +31,7 @@ import io.renren.common.utils.R;
 @RestController
 @RequestMapping("generator/tcardept")
 public class TCarDeptController {
+
     @Autowired
     private TCarDeptService tCarDeptService;
 
@@ -60,8 +64,16 @@ public class TCarDeptController {
     @RequestMapping("/save")
     @RequiresPermissions("generator:tcardept:save")
     public R save(@RequestBody TCarDeptEntity tCarDept){
-		tCarDeptService.save(tCarDept);
-
+        List<TCarDeptEntity> entityList = tCarDeptService.selectAllDept();
+        List<TCarDeptEntity> collect = entityList.stream()
+                .filter(t -> {
+                    return t.getParentId().equals(tCarDept.getParentId())
+                            && t.getDeptName().equals(tCarDept.getDeptName());
+                })
+                .collect(Collectors.toList());
+        if (collect.size() <= 0) {
+            tCarDeptService.save(tCarDept);
+        }
         return R.ok();
     }
 

@@ -42,4 +42,6 @@ public interface TCarCarDao extends BaseMapper<TCarCarEntity> {
 
     Integer addDriverByCarId(@Param(value = "driverId") Integer driverId,
                                 @Param(value = "carId")Integer carId);
+
+    List<String> selectNumberByUseCompany(String useCom);
 }

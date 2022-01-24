@@ -5,7 +5,7 @@
 
     <sql id="BASE_COLUMN_LIST">
         tci.id "tci.id",carid,tci.number "tci.number",njdate,njcost,
-        adminoffice,expiredate,tci.remark "tci.remark",transactor,tcc."number" "carnum"
+        adminoffice,expiredate,tci.remark "tci.remark",transactor,tcc.`number` "carnum"
     </sql>
 
 	<!-- 可根据自己的需求，是否要使用 -->

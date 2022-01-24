@@ -112,4 +112,8 @@
         values (#{carId},#{driverId})
     </insert>
 
+    <select id="selectNumberByUseCompany" resultType="string">
+        select tcc.number from t_car_car tcc where tcc.usecompany = #{useCom};
+    </select>
+
 </mapper>

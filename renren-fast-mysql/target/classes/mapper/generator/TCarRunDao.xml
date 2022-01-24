@@ -61,10 +61,13 @@
     </select>
     <select id="selectYearAndMonth" resultType="io.renren.modules.generator.entity.YearMonthEntity">
         select distinct date_format(begintime,'%Y') "year",
-				date_format(begintime,'%m') "month",
-				date_format(begintime,'%Y')
-				+ '-' + date_format(begintime,'%m') "yearMonth"
+		date_format(begintime,'%m') "month",
+        date_format(begintime,'%Y') + '-' + date_format(begintime,'%Y') "yearMonth"
         from t_car_run
+    </select>
+
+    <select id="selectMonthByYear" resultType="string">
+        select DISTINCT DATE_FORMAT(begintime,'%m') from t_car_run where DATE_FORMAT(begintime,'%Y') = #{year}
     </select>
 
 </mapper>

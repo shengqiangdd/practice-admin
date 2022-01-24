@@ -1,10 +1,13 @@
 package io.renren.modules.generator.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
+
 import lombok.Data;
 
 /**
@@ -20,14 +23,9 @@ public class TCarDeptEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * 主键
-	 */
-	@TableId
-	private Long id;
-
-	/**
 	 * 部门id
 	 */
+	@TableId
 	private Long deptid;
 	/**
 	 * 父部门id
@@ -41,5 +39,16 @@ public class TCarDeptEntity implements Serializable {
 	 * 显示顺序
 	 */
 	private Integer ordernum;
+
+	/**
+	 * 节点名称
+	 */
+	private String label;
+
+	/**
+	 * 子菜单
+	 */
+	@TableField(exist = false)
+	private List<TCarDeptEntity> children;
 
 }

@@ -28,9 +28,6 @@ import java.util.stream.Stream;
 @Service("tCarRunService")
 public class TCarRunServiceImpl extends ServiceImpl<TCarRunDao, TCarRunEntity> implements TCarRunService {
 
-    @Autowired
-    private TCarRunDao tCarRunDao;
-
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
         IPage<TCarRunEntity> page = this.page(
@@ -129,6 +126,16 @@ public class TCarRunServiceImpl extends ServiceImpl<TCarRunDao, TCarRunEntity> i
         typeTrees.add(tCarRunTypeTree);
         typeTrees.add(tCarRunTimeTree);
         return typeTrees;
+    }
+
+    @Override
+    public List<YearMonthEntity> selectYearAndMonth() {
+        return this.baseMapper.selectYearAndMonth();
+    }
+
+    @Override
+    public List<String> selectMonthByYear(String year) {
+        return this.baseMapper.selectMonthByYear(year);
     }
 
     private List<Tree> getTrees(List<String> list) {

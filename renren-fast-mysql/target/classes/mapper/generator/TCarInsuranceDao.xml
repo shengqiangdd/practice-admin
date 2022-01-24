@@ -4,10 +4,10 @@
 <mapper namespace="io.renren.modules.generator.dao.TCarInsuranceDao">
 
     <sql id="BASE_COLUMN_LIST">
-        tci.id "tci.id",carid,tci.number "tci.number",bxdate,bxtype,cost,
+        tci.id "tci.id",carid,tci.`number` "tci.number",bxdate,bxtype,cost,
         amount,tci.company "tci.company",transactor,expiredate,
         tci.remark "tci.remark",tci.usecompany "tci.usecompany",
-        carmodel,tcc.number "carnum"
+        carmodel,tcc.`number` "carnum"
     </sql>
 
 	<!-- 可根据自己的需求，是否要使用 -->

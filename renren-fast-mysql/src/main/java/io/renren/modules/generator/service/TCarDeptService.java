@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import io.renren.common.utils.PageUtils;
 import io.renren.modules.generator.entity.TCarDeptEntity;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,5 +17,11 @@ import java.util.Map;
 public interface TCarDeptService extends IService<TCarDeptEntity> {
 
     PageUtils queryPage(Map<String, Object> params);
+
+    List<TCarDeptEntity> selectAllDept();
+
+    List<TCarDeptEntity> selectDeptAndChildren();
+
+    List<TCarDeptEntity> selectAllUseCarPeople();
 }
 

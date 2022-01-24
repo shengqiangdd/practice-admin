@@ -9,7 +9,14 @@
         <result property="parentId" column="parent_id"/>
         <result property="deptName" column="dept_name"/>
         <result property="ordernum" column="ordernum"/>
+        <result property="label" column="label"/>
     </resultMap>
-
+    <select id="selectAllDept" resultMap="tCarDeptMap">
+        select deptid,parent_id,dept_name "label",ordernum
+        from t_car_dept group by deptid order by parent_id,dept_name
+    </select>
+    <select id="selectAllUseCarPeople" resultMap="tCarDeptMap">
+        select tcd.deptid,tcd.parent_id,tcd.dept_name from t_car_dept tcd where tcd.parent_id = 101
+    </select>
 
 </mapper>

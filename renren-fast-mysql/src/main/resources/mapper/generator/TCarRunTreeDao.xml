@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.renren.modules.generator.dao.TCarRunTreeDao">
+
+    <resultMap id="treeMap" type="io.renren.modules.generator.entity.TCarRunTreeEntity">
+        <result property="treeId" column="tree_id"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="label" column="label"/>
+        <result property="orderNum" column="order_num"/>
+    </resultMap>
+
+    <select id="selectAllTree" resultMap="treeMap">
+        select tree_id,parent_id,label,order_num
+        from t_car_run_tree group by tree_id order by parent_id,label
+    </select>
+</mapper>

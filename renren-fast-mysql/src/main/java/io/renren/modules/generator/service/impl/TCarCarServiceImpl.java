@@ -239,10 +239,10 @@ public class TCarCarServiceImpl extends ServiceImpl<TCarCarDao, TCarCarEntity> i
             if (!StringUtils.isEmpty(tCarCar.getModel())) {
                 queryWrapper.eq("tcc.model", tCarCar.getModel());
             }
-            if (tCarCar.getType() != null) {
+            if (tCarCar.getType() != null && tCarCar.getType() > 0) {
                 queryWrapper.eq("tcc.type", tCarCar.getType());
             }
-            if (tCarCar.getSeating() != null) {
+            if (tCarCar.getSeating() != null && tCarCar.getSeating() > 0) {
                 queryWrapper.eq("tcc.seating", tCarCar.getSeating());
             }
             if (!StringUtils.isEmpty(tCarCar.getCompany())) {
@@ -261,8 +261,12 @@ public class TCarCarServiceImpl extends ServiceImpl<TCarCarDao, TCarCarEntity> i
                 buydate2 = new DateTime(params.get("buydate2")).toString("yyyy-MM-dd");
                 queryWrapper.between("tcc.buydate", buydate1, buydate2);
             }
-            if (params.get("ntype") != null) {
-                queryWrapper.eq("tcc.`type`", params.get("ntype"));
+            Object ntype = params.get("ntype");
+            if (ntype != null) {
+                Integer ntype1 = Integer.parseInt(ntype.toString());
+                if (ntype1 > 0) {
+                    queryWrapper.eq("tcc.type", ntype1);
+                }
             }
         }
         return queryWrapper;

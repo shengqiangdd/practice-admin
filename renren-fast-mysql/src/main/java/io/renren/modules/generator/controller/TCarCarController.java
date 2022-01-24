@@ -6,8 +6,10 @@ import java.util.stream.Collectors;
 import com.alibaba.druid.util.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.renren.common.utils.DateUtils;
+import io.renren.modules.generator.entity.TCarDeptEntity;
 import io.renren.modules.generator.entity.TCarStateEntity;
 import io.renren.modules.generator.entity.TypeTree;
+import io.renren.modules.generator.service.TCarDeptService;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,7 +22,6 @@ import io.renren.modules.generator.entity.TCarCarEntity;
 import io.renren.modules.generator.service.TCarCarService;
 import io.renren.common.utils.PageUtils;
 import io.renren.common.utils.R;
-
 
 
 /**
@@ -36,24 +37,19 @@ public class TCarCarController {
     @Autowired
     private TCarCarService tCarCarService;
 
+    @Autowired
+    private TCarDeptService tCarDeptService;
+
     /**
      * 列表
      */
     @RequestMapping("/list")
     @RequiresPermissions("generator:tcarcar:list")
     public R list(@RequestParam Map<String, Object> params,
-                  TCarCarEntity tCarCar){
-        Page<TCarCarEntity> page = null;
-        String name = (String) params.get("name");
-        if (!StringUtils.isEmpty(name) && name.equals("tCarAndRun")) {
-            page = tCarCarService.selectTCarAndRunByCondition(tCarCar, params);
-        } else {
-            page = tCarCarService.selectTCarByCondition(tCarCar, params);
-//            page.getRecords().stream()
-//                    .sorted(Comparator.comparing(TCarCarEntity::getId))
-//                    .collect(Collectors.toList());
-        }
-        return R.ok().put("page", page);
+                  TCarCarEntity tCarCar) {
+        Page<TCarCarEntity> page = tCarCarService.selectTCarByCondition(tCarCar, params);
+        List<TCarDeptEntity> trees = tCarDeptService.selectDeptAndChildren();
+        return R.ok().put("page", page).put("trees",trees);
     }
 
     /**
@@ -61,8 +57,8 @@ public class TCarCarController {
      */
     @RequestMapping("/typelist")
     @RequiresPermissions("generator:tcarcar:list")
-    public R typeList(){
-        final List<TypeTree> typeTreeList = tCarCarService.selectTypeTree();
+    public R typeList() {
+        List<TypeTree> typeTreeList = tCarCarService.selectTypeTree();
         return R.ok().put("list", typeTreeList);
     }
 
@@ -71,7 +67,7 @@ public class TCarCarController {
      */
     @RequestMapping("/tcarstatus")
     @RequiresPermissions("generator:tcarcar:list")
-    public R status(@RequestParam Map<String,Object> map){
+    public R status(@RequestParam Map<String, Object> map) {
         return tCarCarService.selectTCarStatus(map);
     }
 
@@ -80,8 +76,8 @@ public class TCarCarController {
      */
     @RequestMapping("/info/{id}")
     @RequiresPermissions("generator:tcarcar:info")
-    public R info(@PathVariable("id") Long id){
-		TCarCarEntity tCarCar = tCarCarService.getById(id);
+    public R info(@PathVariable("id") Long id) {
+        TCarCarEntity tCarCar = tCarCarService.getById(id);
 
         return R.ok().put("tCarCar", tCarCar);
     }
@@ -91,9 +87,9 @@ public class TCarCarController {
      */
     @RequestMapping("/save")
     @RequiresPermissions("generator:tcarcar:save")
-    public R save(@RequestBody TCarCarEntity tCarCar){
+    public R save(@RequestBody TCarCarEntity tCarCar) {
 
-		tCarCarService.save(tCarCar);
+        tCarCarService.save(tCarCar);
         return R.ok();
     }
 
@@ -102,9 +98,9 @@ public class TCarCarController {
      */
     @RequestMapping("/update")
     @RequiresPermissions("generator:tcarcar:update")
-    public R update(@RequestBody TCarCarEntity tCarCar){
+    public R update(@RequestBody TCarCarEntity tCarCar) {
 
-		tCarCarService.updateById(tCarCar);
+        tCarCarService.updateById(tCarCar);
         return R.ok();
     }
 
@@ -113,7 +109,7 @@ public class TCarCarController {
      */
     @RequestMapping("/updateDriver")
     @RequiresPermissions("generator:tcarcar:update")
-    public R update(@RequestBody Map<String,Object> data){
+    public R update(@RequestBody Map<String, Object> data) {
         tCarCarService.addDriverByCarId(data);
         return R.ok();
     }
@@ -123,8 +119,8 @@ public class TCarCarController {
      */
     @RequestMapping("/delete")
     @RequiresPermissions("generator:tcarcar:delete")
-    public R delete(@RequestBody Long[] ids){
-		tCarCarService.removeByIds(Arrays.asList(ids));
+    public R delete(@RequestBody Long[] ids) {
+        tCarCarService.removeByIds(Arrays.asList(ids));
 
         return R.ok();
     }
