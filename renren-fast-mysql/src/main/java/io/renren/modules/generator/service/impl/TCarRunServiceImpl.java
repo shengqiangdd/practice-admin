@@ -159,8 +159,8 @@ public class TCarRunServiceImpl extends ServiceImpl<TCarRunDao, TCarRunEntity> i
             Object begintime = params.get("begintime");
             Object endtime = params.get("endtime");
             if (begintime != null && endtime != null) {
-                begintime = new DateTime(params.get("begintime")).toString("yyyy-MM-dd");
-                endtime = new DateTime(params.get("endtime")).toString("yyyy-MM-dd");
+                begintime = new DateTime(begintime).toString("yyyy-MM-dd");
+                endtime = new DateTime(endtime).toString("yyyy-MM-dd");
                 queryWrapper.between("tcr.begintime", begintime,endtime);
             }
             String carnum = (String) params.get("carnum");
